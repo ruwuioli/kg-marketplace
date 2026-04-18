@@ -1,0 +1,36 @@
+{
+  "name": "@kgm/web",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "dotenv -e ../../.env -- next dev --port 3000",
+    "build": "dotenv -e ../../.env -- next build",
+    "start": "dotenv -e ../../.env -- next start --port 3000",
+    "lint": "next lint",
+    "type-check": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@kgm/types": "workspace:*",
+    "@kgm/utils": "workspace:*",
+    "next": "15.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@kgm/config": "workspace:*",
+    "@kgm/ui": "workspace:*",
+    "@types/node": "^20.14.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "autoprefixer": "^10.4.19",
+    "dotenv-cli": "^7.4.2",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "15.0.0",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.0",
+    "typescript": "^5.5.0",
+    "vitest": "^2.0.0"
+  }
+}
