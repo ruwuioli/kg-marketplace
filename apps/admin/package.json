@@ -1,0 +1,12 @@
+{
+  "name": "@kgm/admin",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "echo 'admin app is deferred to Phase 2' && exit 0",
+    "build": "echo 'admin app is deferred to Phase 2' && exit 0",
+    "lint": "echo 'admin app has no source yet' && exit 0",
+    "type-check": "echo 'admin app has no source yet' && exit 0",
+    "test": "echo 'admin app has no tests yet' && exit 0"
+  }
+}
