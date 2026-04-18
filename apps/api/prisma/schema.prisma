@@ -64,6 +64,11 @@ enum PaymentProvider {
   CASH
 }
 
+enum OtpPurpose {
+  PHONE_VERIFY
+  PASSWORD_RESET
+}
+
 // ─── Models ───────────────────────────────────────────────────────────────────
 
 model User {
@@ -93,6 +98,7 @@ model User {
   reviewsReceived   Review[]          @relation("ReviewsReceived")
   refreshTokens     RefreshToken[]
   favorites         Favorite[]
+  otpCodes          OtpCode[]
 
   @@index([email])
   @@index([phone])
@@ -270,4 +276,21 @@ model Review {
   @@unique([reviewerId, orderId])
   @@index([revieweeId])
   @@index([orderId])
+}
+
+model OtpCode {
+  id         String     @id @default(cuid())
+  code       String
+  purpose    OtpPurpose
+  userId     String?
+  email      String?
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime   @default(now())
+
+  user       User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, purpose])
+  @@index([email, purpose])
+  @@index([expiresAt])
 }
