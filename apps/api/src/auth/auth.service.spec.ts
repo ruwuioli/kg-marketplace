@@ -205,4 +205,61 @@ describe('AuthService', () => {
       expect(deps.tokens.revokeRefresh).toHaveBeenCalledWith('some-token')
     })
   })
+
+  describe('requestPhoneVerify', () => {
+    it('creates code and sends SMS', async () => {
+      asMock(deps.otp.createPhoneOtp).mockResolvedValue('123456')
+      await service.requestPhoneVerify('u1', '+996700111222')
+      expect(deps.otp.createPhoneOtp).toHaveBeenCalledWith('u1')
+      expect(deps.notifier.sendSmsOtp).toHaveBeenCalledWith('+996700111222', '123456')
+    })
+  })
+
+  describe('confirmPhoneVerify', () => {
+    it('consumes OTP and marks user verified', async () => {
+      await service.confirmPhoneVerify('u1', '123456')
+      expect(deps.otp.consumePhoneOtp).toHaveBeenCalledWith('u1', '123456')
+      expect(deps.users.setPhoneVerified).toHaveBeenCalledWith('u1')
+    })
+  })
+
+  describe('requestPasswordReset', () => {
+    it('is a silent no-op when email not found', async () => {
+      asMock(deps.users.findByEmail).mockResolvedValue(null)
+      await service.requestPasswordReset('a@example.com')
+      expect(deps.otp.createPasswordResetOtp).not.toHaveBeenCalled()
+      expect(deps.notifier.sendPasswordResetEmail).not.toHaveBeenCalled()
+    })
+
+    it('creates token and sends email when user exists', async () => {
+      asMock(deps.users.findByEmail).mockResolvedValue({ id: 'u1', email: 'a@example.com' })
+      asMock(deps.otp.createPasswordResetOtp).mockResolvedValue('tok123')
+      await service.requestPasswordReset('A@Example.com')
+      expect(deps.otp.createPasswordResetOtp).toHaveBeenCalledWith('a@example.com')
+      expect(deps.notifier.sendPasswordResetEmail).toHaveBeenCalledWith(
+        'a@example.com',
+        'http://localhost:3000/reset-password?token=tok123',
+      )
+    })
+  })
+
+  describe('confirmPasswordReset', () => {
+    it('updates password hash and revokes refresh tokens', async () => {
+      asMock(deps.otp.consumePasswordResetOtp).mockResolvedValue({ email: 'a@example.com' })
+      asMock(deps.users.findByEmail).mockResolvedValue({ id: 'u1', email: 'a@example.com' })
+      asMock(deps.password.hash).mockResolvedValue('$2b$12$new')
+      await service.confirmPasswordReset('tok123', 'newpass1234')
+      expect(deps.password.hash).toHaveBeenCalledWith('newpass1234')
+      expect(deps.users.updatePassword).toHaveBeenCalledWith('u1', '$2b$12$new')
+      expect(deps.tokens.revokeAllForUser).toHaveBeenCalledWith('u1')
+    })
+
+    it('throws OTP_INVALID when target user no longer exists', async () => {
+      asMock(deps.otp.consumePasswordResetOtp).mockResolvedValue({ email: 'a@example.com' })
+      asMock(deps.users.findByEmail).mockResolvedValue(null)
+      await expect(service.confirmPasswordReset('tok', 'newpass1234')).rejects.toMatchObject({
+        code: 'OTP_INVALID',
+      })
+    })
+  })
 })
