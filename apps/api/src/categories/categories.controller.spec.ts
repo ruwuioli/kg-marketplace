@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { CategoriesController } from './categories.controller'
-import { CategoriesService } from './categories.service'
+import type { CategoriesService } from './categories.service'
 
 const findTree = vi.fn()
 const svc = { findTree } as unknown as CategoriesService

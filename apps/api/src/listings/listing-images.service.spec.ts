@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { PrismaService } from '../prisma/prisma.service'
+import type { PrismaService } from '../prisma/prisma.service'
 import type { IStorageAdapter } from '../storage/storage.adapter'
 
 import { ListingImagesService } from './listing-images.service'
-import { ListingsService } from './listings.service'
+import type { ListingsService } from './listings.service'
 
 const count = vi.fn()
 const findFirst = vi.fn()

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { PrismaService } from '../prisma/prisma.service'
+import type { PrismaService } from '../prisma/prisma.service'
 
 import { CategoriesService } from './categories.service'
 

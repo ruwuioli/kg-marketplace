@@ -1,7 +1,7 @@
 import { Decimal } from '@prisma/client/runtime/library'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { PrismaService } from '../prisma/prisma.service'
+import type { PrismaService } from '../prisma/prisma.service'
 
 import { ListingsService } from './listings.service'
 

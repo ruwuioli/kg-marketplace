@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { AuthUserPayload } from '../common/types/authenticated-request'
 
 import { ListingsController } from './listings.controller'
-import { ListingsService } from './listings.service'
+import type { ListingsService } from './listings.service'
 
 const findPublicMany = vi.fn()
 const findOwnedMany = vi.fn()

@@ -4,7 +4,7 @@ import type { AuthUserPayload } from '../common/types/authenticated-request'
 import type { IStorageAdapter } from '../storage/storage.adapter'
 
 import { UsersController } from './users.controller'
-import { UsersService } from './users.service'
+import type { UsersService } from './users.service'
 
 const findById = vi.fn()
 const updateProfile = vi.fn()

@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { AuthUserPayload } from '../common/types/authenticated-request'
 
 import { ListingImagesController } from './listing-images.controller'
-import { ListingImagesService } from './listing-images.service'
+import type { ListingImagesService } from './listing-images.service'
 
 const addImage = vi.fn()
 const removeImage = vi.fn()
