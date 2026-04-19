@@ -8,8 +8,8 @@ import type { Env } from '../config/env'
 import { ENV_TOKEN } from '../config/env.token'
 import { UsersService } from '../users/users.service'
 
-import type { IssuedTokens } from './token.service'
 import { OtpService } from './otp.service'
+import type { IssuedTokens } from './token.service'
 import { TokenService } from './token.service'
 
 @Injectable()

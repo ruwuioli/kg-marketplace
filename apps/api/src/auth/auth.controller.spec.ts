@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 
-import type { UsersService } from '../users/users.service'
 import type { AuthUserPayload } from '../common/types/authenticated-request'
+import type { UsersService } from '../users/users.service'
 
 import { AuthController } from './auth.controller'
 import type { AuthService } from './auth.service'

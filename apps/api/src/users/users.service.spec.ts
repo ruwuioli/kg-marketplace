@@ -1,8 +1,7 @@
-import type { PrismaClient } from '@prisma/client'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 import { ApiException } from '../common/errors/api.exception'
-import { PrismaService } from '../prisma/prisma.service'
+import type { PrismaService } from '../prisma/prisma.service'
 
 import { UsersService } from './users.service'
 

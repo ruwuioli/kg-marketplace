@@ -1,7 +1,6 @@
-import { HttpStatus } from '@nestjs/common'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 
-import { ApiException } from '../common/errors/api.exception'
+import type { ApiException } from '../common/errors/api.exception'
 import type { AuthUserPayload } from '../common/types/authenticated-request'
 
 import { UsersController } from './users.controller'

@@ -2,9 +2,8 @@ import { JwtModule, JwtService } from '@nestjs/jwt'
 import { Test } from '@nestjs/testing'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 
-import { ENV_TOKEN } from '../config/env.token'
 import type { Env } from '../config/env'
-import { PrismaService } from '../prisma/prisma.service'
+import type { PrismaService } from '../prisma/prisma.service'
 
 import { TokenService } from './token.service'
 

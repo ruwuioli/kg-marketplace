@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest'
 import { lastValueFrom, of } from 'rxjs'
+import { describe, it, expect } from 'vitest'
 
 import { ResponseEnvelopeInterceptor } from './response-envelope.interceptor'
 
