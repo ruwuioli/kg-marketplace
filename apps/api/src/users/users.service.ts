@@ -75,6 +75,17 @@ export class UsersService {
     await this.prisma.user.update({ where: { id }, data: { passwordHash } })
   }
 
+  async setAvatar(id: string, avatarUrl: string): Promise<User> {
+    try {
+      return await this.prisma.user.update({ where: { id }, data: { avatarUrl } })
+    } catch (err) {
+      if (isPrismaNotFound(err)) {
+        throw new ApiException('NOT_FOUND', 'User not found', HttpStatus.NOT_FOUND)
+      }
+      throw err
+    }
+  }
+
   async setPhoneVerified(id: string): Promise<void> {
     await this.prisma.user.update({
       where: { id },
