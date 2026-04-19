@@ -186,9 +186,10 @@ export class ListingsService {
     })
     const hasMore = rows.length > limit
     const page = hasMore ? rows.slice(0, limit) : rows
+    const last = page[page.length - 1]
     return {
       data: page.map((row) => this.toPublic(row)),
-      nextCursor: hasMore ? page[page.length - 1].id : null,
+      nextCursor: hasMore && last ? last.id : null,
     }
   }
 }
