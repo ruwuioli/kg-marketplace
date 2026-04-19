@@ -286,6 +286,7 @@ model OtpCode {
   email      String?
   expiresAt  DateTime
   consumedAt DateTime?
+  attempts   Int        @default(0)
   createdAt  DateTime   @default(now())
 
   user       User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
