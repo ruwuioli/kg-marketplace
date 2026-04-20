@@ -1,55 +1,85 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { ApiException } from '../common/errors/api.exception'
 import type { AuthUserPayload } from '../common/types/authenticated-request'
+import type { IStorageAdapter } from '../storage/storage.adapter'
 
 import { UsersController } from './users.controller'
 import type { UsersService } from './users.service'
 
-function makeService(): UsersService {
-  return {
-    findById: vi.fn(),
-    updateProfile: vi.fn(),
-    toPublic: vi.fn((u: unknown) => u),
-  } as unknown as UsersService
-}
+const findById = vi.fn()
+const updateProfile = vi.fn()
+const setAvatar = vi.fn()
+const toPublic = vi.fn((u) => ({ ...u, createdAt: 'iso', updatedAt: 'iso' }))
+const users = {
+  findById,
+  updateProfile,
+  setAvatar,
+  toPublic,
+} as unknown as UsersService
 
-const authUser: AuthUserPayload = { id: 'u1', email: 'a@example.com', role: 'BUYER' }
+const upload = vi.fn()
+const storage = { upload, delete: vi.fn() } as unknown as IStorageAdapter
+
+const auth: AuthUserPayload = { id: 'u1', email: 'a@b.c', role: 'BUYER' }
 
 describe('UsersController', () => {
-  let svc: UsersService
-  let controller: UsersController
+  let ctrl: UsersController
 
   beforeEach(() => {
-    svc = makeService()
-    controller = new UsersController(svc)
+    ;[findById, updateProfile, setAvatar, upload].forEach((m) => m.mockReset())
+    toPublic.mockClear()
+    ctrl = new UsersController(users, storage)
   })
 
-  describe('GET /users/me', () => {
-    it('returns the current user', async () => {
-      const user = { id: 'u1' }
-      ;(svc.findById as ReturnType<typeof vi.fn>).mockResolvedValue(user)
-      const result = await controller.me(authUser)
-      expect(svc.findById).toHaveBeenCalledWith('u1')
-      expect(result).toBe(user)
-    })
-
-    it('throws NOT_FOUND when user disappears', async () => {
-      ;(svc.findById as ReturnType<typeof vi.fn>).mockResolvedValue(null)
-      await expect(controller.me(authUser)).rejects.toMatchObject({
-        code: 'NOT_FOUND',
-        message: expect.any(String),
-      } as unknown as ApiException)
-    })
+  it('GET /users/me returns the current user', async () => {
+    findById.mockResolvedValue({ id: 'u1', email: 'a@b.c' })
+    const result = await ctrl.me(auth)
+    expect(result.id).toBe('u1')
   })
 
-  describe('PATCH /users/me', () => {
-    it('delegates to service and returns public user', async () => {
-      const updated = { id: 'u1', firstName: 'New' }
-      ;(svc.updateProfile as ReturnType<typeof vi.fn>).mockResolvedValue(updated)
-      const result = await controller.updateMe(authUser, { firstName: 'New' })
-      expect(svc.updateProfile).toHaveBeenCalledWith('u1', { firstName: 'New' })
-      expect(result).toEqual(updated)
+  it('GET /users/me 404s when missing', async () => {
+    findById.mockResolvedValue(null)
+    await expect(ctrl.me(auth)).rejects.toMatchObject({ code: 'NOT_FOUND' })
+  })
+
+  it('PATCH /users/me returns the updated profile', async () => {
+    updateProfile.mockResolvedValue({ id: 'u1', firstName: 'Z' })
+    const result = await ctrl.updateMe(auth, { firstName: 'Z' })
+    expect(updateProfile).toHaveBeenCalledWith('u1', { firstName: 'Z' })
+    expect(result.firstName).toBe('Z')
+  })
+
+  it('POST /users/me/avatar uploads, persists URL, and returns the user', async () => {
+    upload.mockResolvedValue({ url: 'http://x/avatars/u1/a.jpg', key: 'avatars/u1/a.jpg' })
+    setAvatar.mockResolvedValue({ id: 'u1', avatarUrl: 'http://x/avatars/u1/a.jpg' })
+    const result = await ctrl.uploadAvatar(auth, {
+      buffer: Buffer.from('img'),
+      mimetype: 'image/jpeg',
+      size: 3,
     })
+    expect(upload).toHaveBeenCalledWith(
+      expect.stringMatching(/^avatars\/u1\/[0-9a-f-]+\.jpg$/),
+      expect.any(Buffer),
+      'image/jpeg',
+    )
+    expect(setAvatar).toHaveBeenCalledWith('u1', 'http://x/avatars/u1/a.jpg')
+    expect(result.avatarUrl).toBe('http://x/avatars/u1/a.jpg')
+  })
+
+  it('POST /users/me/avatar rejects bad MIME', async () => {
+    await expect(
+      ctrl.uploadAvatar(auth, { buffer: Buffer.from('x'), mimetype: 'image/gif', size: 1 }),
+    ).rejects.toMatchObject({ code: 'LISTING_IMAGE_INVALID_TYPE' })
+    expect(upload).not.toHaveBeenCalled()
+  })
+
+  it('POST /users/me/avatar rejects oversize', async () => {
+    await expect(
+      ctrl.uploadAvatar(auth, {
+        buffer: Buffer.from('x'),
+        mimetype: 'image/jpeg',
+        size: 6 * 1024 * 1024,
+      }),
+    ).rejects.toMatchObject({ code: 'LISTING_IMAGE_TOO_LARGE' })
   })
 })

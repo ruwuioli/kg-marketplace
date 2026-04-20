@@ -146,4 +146,23 @@ describe('UsersService', () => {
       expect(result.createdAt).toBe('2026-04-19T10:00:00.000Z')
     })
   })
+
+  describe('setAvatar', () => {
+    it('updates avatarUrl and returns the user', async () => {
+      prisma.user.update.mockResolvedValue(dbUser({ avatarUrl: 'http://x/a.jpg' }))
+      const result = await service.setAvatar('u1', 'http://x/a.jpg')
+      expect(prisma.user.update).toHaveBeenCalledWith({
+        where: { id: 'u1' },
+        data: { avatarUrl: 'http://x/a.jpg' },
+      })
+      expect(result.avatarUrl).toBe('http://x/a.jpg')
+    })
+
+    it('throws NOT_FOUND on Prisma P2025', async () => {
+      prisma.user.update.mockRejectedValue({ code: 'P2025' })
+      await expect(service.setAvatar('u1', 'u')).rejects.toMatchObject({
+        code: 'NOT_FOUND',
+      })
+    })
+  })
 })
