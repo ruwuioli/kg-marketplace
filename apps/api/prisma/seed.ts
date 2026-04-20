@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client'
+import * as bcrypt from 'bcrypt'
 
 const prisma = new PrismaClient()
 
@@ -157,6 +158,80 @@ async function seedTree(nodes: CategorySeed[], parentId: string | null, baseSort
   }
 }
 
+async function seedDevUser(): Promise<string> {
+  const passwordHash = await bcrypt.hash('devpass123', 12)
+  const user = await prisma.user.upsert({
+    where: { email: 'dev@kgm.local' },
+    update: {},
+    create: {
+      email: 'dev@kgm.local',
+      phone: '+996700000000',
+      passwordHash,
+      firstName: 'Dev',
+      lastName: 'Seller',
+      isPhoneVerified: true,
+      status: 'ACTIVE',
+    },
+  })
+  return user.id
+}
+
+async function seedSampleListings(sellerId: string): Promise<void> {
+  const electronics = await prisma.category.findFirst({ where: { slug: 'phones' } })
+  const transport = await prisma.category.findFirst({ where: { slug: 'cars' } })
+  const home = await prisma.category.findFirst({ where: { slug: 'furniture' } })
+  if (!electronics || !transport || !home) {
+    throw new Error('seed: expected leaf categories not found; run category seed first')
+  }
+  const samples = [
+    {
+      title: 'iPhone 13 Pro 256GB',
+      description:
+        'Отличное состояние, полный комплект, использовался 1 год. Без царапин, батарея 95%.',
+      price: '65000',
+      condition: 'GOOD' as const,
+      categoryId: electronics.id,
+      location: 'Бишкек',
+    },
+    {
+      title: 'Toyota Camry 2019',
+      description:
+        'Автомобиль в идеальном состоянии. Один владелец, сервисная история, без ДТП.',
+      price: '1450000',
+      condition: 'GOOD' as const,
+      categoryId: transport.id,
+      location: 'Бишкек',
+    },
+    {
+      title: 'Диван угловой новый',
+      description:
+        'Новый диван из салона, доставка по городу. Материал: экокожа, цвет бежевый.',
+      price: '42000',
+      condition: 'NEW' as const,
+      categoryId: home.id,
+      location: 'Ош',
+    },
+  ]
+  for (const s of samples) {
+    await prisma.listing.upsert({
+      where: { id: `seed-${s.title.slice(0, 20)}` },
+      update: {},
+      create: {
+        id: `seed-${s.title.slice(0, 20)}`,
+        title: s.title,
+        description: s.description,
+        price: s.price,
+        currency: 'KGS',
+        condition: s.condition,
+        status: 'ACTIVE',
+        location: s.location,
+        sellerId,
+        categoryId: s.categoryId,
+      },
+    })
+  }
+}
+
 async function main(): Promise<void> {
   // eslint-disable-next-line no-console
   console.warn('[seed] seeding categories...')
@@ -164,6 +239,10 @@ async function main(): Promise<void> {
   const count = await prisma.category.count()
   // eslint-disable-next-line no-console
   console.warn(`[seed] done. total categories: ${count}`)
+  const devUserId = await seedDevUser()
+  await seedSampleListings(devUserId)
+  // eslint-disable-next-line no-console
+  console.warn('✓ seeded dev user and sample listings')
 }
 
 main()
