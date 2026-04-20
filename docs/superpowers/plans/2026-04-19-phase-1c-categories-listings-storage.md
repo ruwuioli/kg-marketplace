@@ -2172,7 +2172,7 @@ git commit -m "chore(api): lint fixes from phase 1c wiring"   # only if needed
 
 **Files:** none (runtime check)
 
-- [ ] **Step 18.1: Reset stack and start services**
+- [x] **Step 18.1: Reset stack and start services**
 
 ```bash
 cd /Users/ruwuioli/Documents/kgm
@@ -2183,7 +2183,7 @@ pnpm --filter=@kgm/api dev
 
 In a second terminal, with the API running, execute the curl commands below.
 
-- [ ] **Step 18.2: Fetch the category tree**
+- [x] **Step 18.2: Fetch the category tree**
 
 ```bash
 curl -s http://localhost:3001/api/v1/categories | jq '.data | length, .data[0]'
@@ -2197,7 +2197,7 @@ CAT=$(curl -s http://localhost:3001/api/v1/categories | jq -r '.data[0].children
 echo "$CAT"
 ```
 
-- [ ] **Step 18.3: Register + login**
+- [x] **Step 18.3: Register + login**
 
 ```bash
 curl -s -X POST http://localhost:3001/api/v1/auth/register \
@@ -2212,7 +2212,7 @@ echo "ACCESS=${ACCESS:0:20}..."
 
 Expected: `ACCESS=eyJ...` printed.
 
-- [ ] **Step 18.4: Create a listing**
+- [x] **Step 18.4: Create a listing**
 
 ```bash
 LISTING=$(curl -s -X POST http://localhost:3001/api/v1/listings \
@@ -2224,7 +2224,7 @@ echo "LISTING=$LISTING"
 
 Expected: `LISTING=<cuid>` printed. A `GET /listings/mine` shows it in DRAFT.
 
-- [ ] **Step 18.5: Verify it's not in the public list (DRAFT)**
+- [x] **Step 18.5: Verify it's not in the public list (DRAFT)**
 
 ```bash
 curl -s "http://localhost:3001/api/v1/listings" | jq ".data | map(select(.id == \"$LISTING\")) | length"
@@ -2232,7 +2232,7 @@ curl -s "http://localhost:3001/api/v1/listings" | jq ".data | map(select(.id == 
 
 Expected: `0` (DRAFT listings are hidden from public).
 
-- [ ] **Step 18.6: Activate the listing**
+- [x] **Step 18.6: Activate the listing**
 
 ```bash
 curl -s -X PATCH "http://localhost:3001/api/v1/listings/$LISTING" \
@@ -2242,7 +2242,7 @@ curl -s -X PATCH "http://localhost:3001/api/v1/listings/$LISTING" \
 
 Expected: `"ACTIVE"`.
 
-- [ ] **Step 18.7: Public listing now visible**
+- [x] **Step 18.7: Public listing now visible**
 
 ```bash
 curl -s "http://localhost:3001/api/v1/listings" | jq ".data | map(select(.id == \"$LISTING\")) | length"
@@ -2250,7 +2250,7 @@ curl -s "http://localhost:3001/api/v1/listings" | jq ".data | map(select(.id == 
 
 Expected: `1`.
 
-- [ ] **Step 18.8: Upload an image**
+- [x] **Step 18.8: Upload an image**
 
 Generate a tiny test JPEG (or use any local file):
 ```bash
@@ -2268,7 +2268,7 @@ curl -s -X POST "http://localhost:3001/api/v1/listings/$LISTING/images" \
 
 Expected: `{ "data": { "id": "...", "url": "http://localhost:9000/kgm-media/listings/<id>/<uuid>.jpg", "sortOrder": 0 } }`. Open the URL in a browser → image renders.
 
-- [ ] **Step 18.9: Reject oversize image**
+- [x] **Step 18.9: Reject oversize image**
 
 ```bash
 dd if=/dev/urandom of=/tmp/big.jpg bs=1M count=6 2>/dev/null
@@ -2279,7 +2279,7 @@ curl -s -o /dev/null -w "%{http_code}\n" -X POST "http://localhost:3001/api/v1/l
 
 Expected: `413` (multer's pre-check) **or** an envelope with `LISTING_IMAGE_TOO_LARGE`. Either is acceptable — multer rejects before the controller for files exceeding `fileSize`.
 
-- [ ] **Step 18.10: Reject bad MIME**
+- [x] **Step 18.10: Reject bad MIME**
 
 ```bash
 echo "hello" > /tmp/x.txt
@@ -2290,7 +2290,7 @@ curl -s -X POST "http://localhost:3001/api/v1/listings/$LISTING/images" \
 
 Expected: `{ "error": { "code": "LISTING_IMAGE_INVALID_TYPE", ... } }`.
 
-- [ ] **Step 18.11: Avatar upload**
+- [x] **Step 18.11: Avatar upload**
 
 ```bash
 curl -s -X POST http://localhost:3001/api/v1/users/me/avatar \
@@ -2300,7 +2300,7 @@ curl -s -X POST http://localhost:3001/api/v1/users/me/avatar \
 
 Expected: `"http://localhost:9000/kgm-media/avatars/<userId>/<uuid>.jpg"`. URL renders the image when opened.
 
-- [ ] **Step 18.12: Public listing detail increments viewCount**
+- [x] **Step 18.12: Public listing detail increments viewCount**
 
 ```bash
 V1=$(curl -s "http://localhost:3001/api/v1/listings/$LISTING" | jq '.data.viewCount')
@@ -2310,7 +2310,7 @@ echo "before=$V1 after=$V2"
 
 Expected: `after = before + 1`.
 
-- [ ] **Step 18.13: Cursor pagination**
+- [x] **Step 18.13: Cursor pagination**
 
 Create a few more listings then page through:
 ```bash
@@ -2334,7 +2334,7 @@ curl -s "http://localhost:3001/api/v1/listings?limit=2&cursor=$NEXT" | jq '{coun
 
 Expected: page 1 returns 2 items + non-null `nextCursor`. Page 2 returns 2 items with strictly older `id` values than page 1.
 
-- [ ] **Step 18.14: Soft delete**
+- [x] **Step 18.14: Soft delete**
 
 ```bash
 curl -s -X DELETE "http://localhost:3001/api/v1/listings/$LISTING" \
@@ -2344,7 +2344,7 @@ curl -s -o /dev/null -w "%{http_code}\n" "http://localhost:3001/api/v1/listings/
 
 Expected: DELETE returns `{ "data": null }`. Subsequent GET returns `404`.
 
-- [ ] **Step 18.15: Non-owner cannot edit**
+- [x] **Step 18.15: Non-owner cannot edit**
 
 Register a second user, log them in, try to PATCH the original listing:
 ```bash
@@ -2364,7 +2364,7 @@ curl -s -o /dev/null -w "%{http_code}\n" -X PATCH "http://localhost:3001/api/v1/
 
 Expected: `403` with envelope `{ error: { code: "FORBIDDEN", ... } }`.
 
-- [ ] **Step 18.16: Image limit enforcement (optional, slow)**
+- [x] **Step 18.16: Image limit enforcement (optional, slow)**
 
 Loop 11 times posting `/tmp/tiny.jpg` to a fresh listing:
 ```bash
@@ -2382,14 +2382,14 @@ curl -s -o /dev/null -w "%{http_code}\n" -X POST "http://localhost:3001/api/v1/l
 
 Expected: 10 successful uploads, 11th returns `409` with `LISTING_IMAGE_LIMIT_EXCEEDED`.
 
-- [ ] **Step 18.17: Stop the stack**
+- [x] **Step 18.17: Stop the stack**
 
 ```bash
 # In the API terminal, Ctrl+C
 docker compose down
 ```
 
-- [ ] **Step 18.18: No code change to commit**
+- [x] **Step 18.18: No code change to commit**
 
 If lint left no fixes after the smoke test, this task does not produce a commit. Skip.
 
